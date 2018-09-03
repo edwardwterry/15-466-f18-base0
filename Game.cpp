@@ -179,6 +179,7 @@ Game::Game() {
             return f->second;
         };
 
+        // load meshes
         background_mesh = lookup("Background");
         sat_mesh = lookup("Satellite");
         asteroid_mesh = lookup("Asteroid");
@@ -293,8 +294,6 @@ void Game::update(float elapsed, uint32_t num_frames) {
         glm::vec4 dv = glm::vec4(0.0f); // linear velocity increment
         float dw = 0.0f; // angular velocity increment
         int thruster_count = 0;
-        // print out per https://stackoverflow.com/questions/11515469/ ...
-        //      how-do-i-print-vector-values-of-type-glmvec3-that-have-been-passed-by-referenc
 
         if (controls.yaw_left) {
             dw += amt_rot;
@@ -355,16 +354,15 @@ void Game::update(float elapsed, uint32_t num_frames) {
     for (auto& asteroid: asteroids){
         if ((compute_distance(sat.transform, asteroid.transform))<=asteroid_capture_distance && controls.grab){
             asteroid.active = false;
-            fuel += fuel_asteroid_increment;
+            fuel += fuel_asteroid_increment; // satellite gets fuel boost
         }
     }
 
     for (auto& junk: junks){
         if ((compute_distance(sat.transform, junk.transform))<=collision_min_distance){
-            sat.active = false;
+            sat.active = false; // if satellite collides with space junk
         }
     }        
-
 
     if (fuel < 0.0f){
         sat.active = false;
@@ -412,20 +410,20 @@ void Game::update(float elapsed, uint32_t num_frames) {
         }
 
         float th = atan2(y_end - y_start, x_end - x_start);
-        objs.back().transform = {  glm::angleAxis(0.0f, glm::vec3(1.0f, 0.0f, 0.0f)), 
-                                        glm::quat(1.0f, 0.0f, 0.0f, 0.0f), 
-                                        glm::vec3(x_start, y_start, 0.0f), 
-                                        glm::vec3(cos(th)*0.1f, sin(th)*0.1f, 0.0f)};
+        objs.back().transform = {   glm::angleAxis(0.0f, glm::vec3(1.0f, 0.0f, 0.0f)), 
+                                    glm::quat(1.0f, 0.0f, 0.0f, 0.0f), 
+                                    glm::vec3(x_start, y_start, 0.0f), 
+                                    glm::vec3(cos(th)*0.1f, sin(th)*0.1f, 0.0f)};
         objs.back().active = true;
     };
 
     if (num_frames % asteroid_spawn_interval == 0){
-        int edge = rand()/(RAND_MAX/4);
+        int edge = rand()/(RAND_MAX/4); // which edge does it originate from?
         spawn_object(asteroids, edge);
     }
 
     if (num_frames % junk_spawn_interval == 0){
-        int edge = rand()/(RAND_MAX/4);
+        int edge = rand()/(RAND_MAX/4); // which edge does it originate from?
         spawn_object(junks, edge);
     }
 }
@@ -493,7 +491,7 @@ void Game::draw(glm::uvec2 drawable_size) {
             )
             * glm::mat4_cast(sat.transform.rotation)
         );
-        if (fuel>1.0f){
+        if (fuel>1.0f){ // full of fuel
             draw_mesh(health_bar_win_mesh,
                 glm::mat4(
                     0.03f, 0.0f, 0.0f, 0.0f,
@@ -515,7 +513,7 @@ void Game::draw(glm::uvec2 drawable_size) {
 
     }
 
-    for (auto &asteroid: asteroids){
+    for (auto &asteroid: asteroids){ // draw the asteroid objects
         if (asteroid.active){
             draw_mesh(asteroid_mesh,
                 glm::mat4(
@@ -529,7 +527,7 @@ void Game::draw(glm::uvec2 drawable_size) {
         }
     }
 
-    for (auto &junk: junks){
+    for (auto &junk: junks){ // draw the space junk objects
         draw_mesh(junk_mesh,
             glm::mat4(
                 0.025f, 0.0f, 0.0f, 0.0f,

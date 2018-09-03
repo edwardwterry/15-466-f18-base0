@@ -1,6 +1,4 @@
 # Game Information
-(Note: fill in this portion with information about your game.)
-
 Title: Asteroid Wrangling
 
 Author: Edward Terry
@@ -21,6 +19,9 @@ The difficulties I encountered fell into three categories:
 Good Code:
 
 I was happy with the way I encapsulated the spawning behavior into a single function, which receives the type of object to be created as an argument. This is also the first time I've used inline functions, which prevents the scope expanding beyond its local use. The soundtrack which I recorded and the asteroid model which I made are both unique features which enhance the game atmosphere.
+
+References for images:
+https://www.filterforge.com/filters/13302.html and https://www.pexels.com/photo/sky-space-milky-way-stars-110854/
 
 # Using This Base Code
 

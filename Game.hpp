@@ -3,6 +3,7 @@
 #include "GL.hpp"
 
 #include <SDL.h>
+#include <SDL_audio.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/quaternion.hpp>
 
@@ -23,7 +24,7 @@ struct Game {
     bool handle_event(SDL_Event const &evt, glm::uvec2 window_size);
 
     //update is called at the start of a new frame, after events are handled:
-    void update(float elapsed);
+    void update(float elapsed, uint32_t num_frames);
 
     //draw is called after update:
     void draw(glm::uvec2 drawable_size);
@@ -58,27 +59,59 @@ struct Game {
         GLsizei count = 0;
     };
 
-    Mesh tile_mesh;
-    Mesh cursor_mesh;
-    Mesh doll_mesh;
-    Mesh egg_mesh;
-    Mesh cube_mesh;
+    Mesh background_mesh;
+    Mesh sat_mesh;
+    Mesh asteroid_mesh;
+    Mesh junk_mesh;
+    Mesh health_bar_win_mesh;
+    Mesh health_bar_foreground_mesh;
 
     GLuint meshes_for_simple_shading_vao = -1U; //vertex array object that describes how to connect the meshes_vbo to the simple_shading_program
 
     //------- game state -------
 
-    glm::uvec2 board_size = glm::uvec2(5,4);
-    std::vector< Mesh const * > board_meshes;
-    std::vector< glm::quat > board_rotations;
+    struct Transform {
+        glm::quat rotation;
+        glm::quat ang_vel;
+        glm::vec3 position;
+        glm::vec3 lin_vel;
+    };
 
-    glm::uvec2 cursor = glm::vec2(0,0);
+    float fuel = 0.6f;
+    float fuel_burn_increment = 0.0005f;
+    float fuel_asteroid_increment = 0.03f;
+
+    uint32_t asteroid_spawn_interval = 800;
+    uint32_t junk_spawn_interval = 400;
+
+    float asteroid_capture_distance = 0.07f;
+    float collision_min_distance = 0.1f;
+
+    glm::vec2 frame_max = glm::vec2(0.85f, 0.5f);
+    glm::vec2 frame_min = glm::vec2(-0.85f, -0.5f);
 
     struct {
-        bool roll_left = false;
-        bool roll_right = false;
-        bool roll_up = false;
-        bool roll_down = false;
+        bool yaw_left = false;
+        bool yaw_right = false;
+        bool trans_left = false;
+        bool trans_right = false;
+        bool trans_fwd = false;
+        bool trans_back = false;
+        bool grab = false;
     } controls;
 
+    struct FlyingObject {
+        Transform transform;
+        bool active;
+    };
+
+    FlyingObject sat {
+        {   glm::angleAxis(0.0f, glm::vec3(1.0f, 0.0f, 0.0f)), // start pointing upwards
+            glm::quat(1.0f, 0.0f, 0.0f, 0.0f), // not rotating
+            glm::vec3(0.0f), // at the origin
+            glm::vec3(0.0f)}, // stationary
+        true};
+
+    std::vector<FlyingObject> asteroids;
+    std::vector<FlyingObject> junks;
 };
